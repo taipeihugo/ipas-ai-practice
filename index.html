@@ -161,6 +161,7 @@ button { cursor: pointer; }
 .switch input:checked { background: var(--primary); }
 .switch input:checked::after { transform: translateX(16px); }
 select.input { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 6px 10px; }
+.session-select { flex: 1; min-width: 220px; max-width: 420px; padding: 9px 12px; font-size: .95rem; }
 
 /* Buttons */
 .btn {
@@ -498,7 +499,7 @@ let allQuestions = [];
 let mistakeIds = new Set(store.get(KEY.mistakes, []));
 let bookmarkIds = new Set(store.get(KEY.bookmarks, []));
 let stats = store.get(KEY.stats, {});          // { id: { c: 答對次數, w: 答錯次數 } }
-const prefs = Object.assign({ mode: 'practice', level: '初級', filter: 'chapter', count: '20', timer: '60', shuffleQ: true, shuffleO: false }, store.get(KEY.prefs, {}));
+const prefs = Object.assign({ mode: 'practice', level: '初級', filter: 'chapter', session: 'all', count: '20', timer: '60', shuffleQ: true, shuffleO: false }, store.get(KEY.prefs, {}));
 const selected = { chapter: null, session: null }; // Set，null 代表預設全選
 
 let quiz = null; // { mode, questions, answers, order, index, startAt, deadline, timerId, submitted }
@@ -621,9 +622,30 @@ function renderChips() {
   const key = prefs.filter;                      // 'chapter' | 'session'
   const field = key === 'chapter' ? 'chapter' : 'exam_session';
   const values = [...new Set(pool.map(q => q[field]))];
+  // 屆次：下拉式單選（可選「全部屆次」）
+  if (key === 'session') {
+    if (prefs.session !== 'all' && !values.includes(prefs.session)) prefs.session = 'all';
+    selected.session = new Set(prefs.session === 'all' ? values : [prefs.session]);
+    const sel = el('select', { class: 'input session-select', 'aria-label': '選擇考試屆次' });
+    sel.append(el('option', { value: 'all', text: `全部屆次（${pool.length} 題）` }));
+    values.sort(chapterSort).forEach(v => {
+      const qs = pool.filter(q => q.exam_session === v);
+      const levels = [...new Set(qs.map(q => q.level))].join('／');
+      sel.append(el('option', { value: v, text: `${v}・${levels}（${qs.length} 題）` }));
+    });
+    sel.value = prefs.session;
+    sel.onchange = () => {
+      prefs.session = sel.value; savePrefs();
+      selected.session = new Set(sel.value === 'all' ? values : [sel.value]);
+      updatePool();
+    };
+    box.append(el('div', { class: 'row', style: 'margin-bottom:0' }, el('label', { text: '屆次' }), sel));
+    updatePool();
+    return;
+  }
   if (!selected[key]) selected[key] = new Set(values);
 
-  // 依科目分組（章節模式），屆次模式則依級別分組
+  // 依科目分組（章節模式）
   const groupBy = key === 'chapter' ? 'subject' : 'level';
   const groups = {};
   pool.forEach(q => { (groups[q[groupBy]] ||= new Set()).add(q[field]); });
