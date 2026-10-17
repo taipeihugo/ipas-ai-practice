@@ -193,6 +193,20 @@ select.input { border: 1px solid var(--border); background: var(--surface); bord
 .tag.level { background: var(--warn-soft); color: var(--warn); border-color: transparent; font-weight: 700; }
 .tag.session { background: var(--primary-soft); color: var(--primary-text); border-color: transparent; }
 .q-text { font-size: 1.08rem; font-weight: 500; margin: 0 0 18px; white-space: pre-wrap; }
+.rich { display: block; white-space: pre-wrap; min-width: 0; overflow-wrap: anywhere; }
+.options { grid-template-columns: minmax(0, 1fr); }
+.opt > .rich { flex: 1; }
+pre.code { max-width: 100%; overflow-wrap: normal; }
+.review-item .opts .rich { display: inline; }
+pre.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .82rem; line-height: 1.55;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; margin: 8px 0; overflow-x: auto; white-space: pre; font-weight: 400; text-align: left;
+}
+.q-img { display: block; max-width: 100%; margin: 4px 0 18px; padding: 8px; background: #fff; border-radius: 10px; border: 1px solid var(--border); }
+.context { margin: 0 0 14px; border: 1px dashed var(--border); border-radius: 12px; background: var(--surface-2); font-size: .9rem; }
+.context summary { cursor: pointer; padding: 8px 12px; font-weight: 700; color: var(--primary-text); }
+.context .rich { padding: 0 12px 10px; }
 .options { display: grid; gap: 10px; }
 .opt {
   display: flex; gap: 12px; align-items: flex-start; text-align: left; width: 100%;
@@ -258,7 +272,7 @@ details.nav-panel[open] summary { margin-bottom: 12px; }
 .bar > div { height: 100%; border-radius: 99px; }
 .review-item { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; border-left: 4px solid var(--danger); background: var(--surface); }
 .review-item.ok { border-left-color: var(--success); }
-.review-item .q { font-weight: 500; margin: 6px 0; }
+.review-item .q { font-weight: 500; margin: 6px 0; white-space: pre-wrap; }
 .review-item .ans { font-size: .88rem; }
 .review-item .ans .ok { color: var(--success); font-weight: 700; }
 .review-item .ans .ng { color: var(--danger); font-weight: 700; }
@@ -410,7 +424,9 @@ details.nav-panel[open] summary { margin-bottom: 12px; }
 
     <div class="card">
       <div class="tags" id="q-tags"></div>
-      <p class="q-text" id="q-text"></p>
+      <div id="q-context"></div>
+      <div class="q-text" id="q-text"></div>
+      <div id="q-image"></div>
       <div class="options" id="q-options"></div>
       <div id="q-explain"></div>
       <div class="quiz-nav">
@@ -517,6 +533,21 @@ const el = (tag, props = {}, ...children) => {
   return n;
 };
 const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+// 題目文字中以 ``` 包住的區塊顯示為程式碼
+const rich = (text, cls = 'rich') => {
+  const box = el('span', { class: cls });
+  String(text).split(/```\n?([\s\S]*?)\n?```/).forEach((part, i) => {
+    if (i % 2) box.append(el('pre', { class: 'code', text: part }));
+    else if (part.trim()) box.append(part.replace(/^\n+|\n+$/g, ''));
+  });
+  return box;
+};
+const contextBox = (q, open) => {
+  if (!q.context) return null;
+  const d = el('details', { class: 'context' }, el('summary', { text: '📋 題組情境' }), rich(q.context));
+  if (open) d.open = true;
+  return d;
+};
 const fmtTime = s => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60); return `${m}:${String(s % 60).padStart(2, '0')}`; };
 const toast = msg => { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200); };
 const saveAll = () => { store.set(KEY.mistakes, [...mistakeIds]); store.set(KEY.bookmarks, [...bookmarkIds]); store.set(KEY.stats, stats); };
@@ -736,7 +767,9 @@ function renderQuestion() {
   const tags = $('q-tags'); tags.innerHTML = '';
   tags.append(el('span', { class: 'tag level', text: q.level }), el('span', { class: 'tag session', text: q.exam_session }),
               el('span', { class: 'tag', text: q.subject }), el('span', { class: 'tag', text: q.chapter }));
-  $('q-text').textContent = q.question;
+  $('q-text').replaceChildren(rich(q.question));
+  $('q-context').replaceChildren(...[contextBox(q, true)].filter(Boolean));
+  $('q-image').replaceChildren(...(q.image ? [el('img', { class: 'q-img', src: q.image, alt: '題目附圖', loading: 'lazy' })] : []));
 
   // 選項依本題順序顯示，代號重新以 A–D 標示；內部仍記錄原始代號
   const box = $('q-options'); box.innerHTML = '';
@@ -745,7 +778,7 @@ function renderQuestion() {
     let cls = 'opt';
     if (revealed) { if (orig === q.answer) cls += ' correct'; else if (orig === ans) cls += ' wrong'; }
     else if (orig === ans) cls += ' selected';
-    const b = el('button', { class: cls }, el('span', { class: 'key', text: label }), el('span', { text: q.options[orig] }));
+    const b = el('button', { class: cls }, el('span', { class: 'key', text: label }), rich(q.options[orig]));
     if (revealed) b.disabled = true;
     b.onclick = () => choose(orig);
     box.append(b);
@@ -888,7 +921,7 @@ function renderReview() {
     const opts = el('ul', { class: 'opts' });
     quiz.order[q.id].forEach((orig, j) => {
       const cls = orig === q.answer ? 'right' : orig === a ? 'mine' : '';
-      opts.append(el('li', { class: cls, text: `(${'ABCD'[j]}) ${q.options[orig]}${orig === q.answer ? '  ✔' : orig === a ? '  ✘' : ''}` }));
+      opts.append(el('li', { class: cls }, `(${'ABCD'[j]}) `, rich(q.options[orig]), orig === q.answer ? '  ✔' : orig === a ? '  ✘' : ''));
     });
     const star = el('button', { class: 'link-btn', text: bookmarkIds.has(q.id) ? '★ 已收藏' : '☆ 收藏' });
     star.onclick = () => { toggleBookmark(q); star.textContent = bookmarkIds.has(q.id) ? '★ 已收藏' : '☆ 收藏'; };
@@ -896,7 +929,9 @@ function renderReview() {
       el('div', { class: 'group-head', style: 'margin:0' },
         el('div', { class: 'tags', style: 'margin:0' }, el('span', { class: 'tag', text: `第 ${i + 1} 題` }), el('span', { class: 'tag session', text: q.exam_session }), el('span', { class: 'tag', text: q.chapter })),
         star),
-      el('p', { class: 'q', text: q.question }),
+      contextBox(q, false),
+      el('div', { class: 'q' }, rich(q.question)),
+      q.image ? el('img', { class: 'q-img', src: q.image, alt: '題目附圖', loading: 'lazy' }) : null,
       opts,
       el('div', { class: 'ans' },
         ok ? el('span', { class: 'ok', text: '✔ 答對' }) : el('span', { class: 'ng', text: a == null ? '⬜ 未作答' : `✘ 你的答案 (${displayKey(q, a)})` }),
