@@ -522,6 +522,8 @@ const toast = msg => { const t = $('toast'); t.textContent = msg; t.classList.ad
 const saveAll = () => { store.set(KEY.mistakes, [...mistakeIds]); store.set(KEY.bookmarks, [...bookmarkIds]); store.set(KEY.stats, stats); };
 const savePrefs = () => store.set(KEY.prefs, prefs);
 const chapterSort = (a, b) => a.localeCompare(b, 'zh-Hant', { numeric: true });
+// 屆次排序：把「第一次／第二屆」等中文數字轉為阿拉伯數字再比較
+const sessionSort = (a, b) => { const n = s => s.replace(/[一二三四五六七八九十]/g, c => '一二三四五六七八九十'.indexOf(c) + 1); return chapterSort(n(a), n(b)); };
 
 /* ================= 主題 ================= */
 function applyTheme(t) {
@@ -628,7 +630,7 @@ function renderChips() {
     selected.session = new Set(prefs.session === 'all' ? values : [prefs.session]);
     const sel = el('select', { class: 'input session-select', 'aria-label': '選擇考試屆次' });
     sel.append(el('option', { value: 'all', text: `全部屆次（${pool.length} 題）` }));
-    values.sort(chapterSort).forEach(v => {
+    values.sort(sessionSort).forEach(v => {
       const qs = pool.filter(q => q.exam_session === v);
       const levels = [...new Set(qs.map(q => q.level))].join('／');
       sel.append(el('option', { value: v, text: `${v}・${levels}（${qs.length} 題）` }));
