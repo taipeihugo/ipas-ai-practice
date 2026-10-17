@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPAS AI 應用規劃師 刷題神器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { primary: '#3b82f6' } } }
+        }
+    </script>
+    <style>
+        body { transition: background-color 0.3s, color 0.3s; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen">
+    
+    <!-- Navbar -->
+    <nav class="p-4 shadow-md bg-white dark:bg-gray-800 flex justify-between items-center">
+        <h1 class="text-xl font-bold">iPAS AI 應用規劃師 練習平台</h1>
+        <button id="themeToggle" class="p-2 bg-gray-200 dark:bg-gray-700 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+            切換深淺模式 ☀️/🌙
+        </button>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="max-w-3xl mx-auto p-6 mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg" id="app">
+        
+        <!-- 首頁設定區 -->
+        <div id="homeScreen" class="block">
+            <h2 class="text-2xl font-bold mb-4 text-center">開始測驗</h2>
+            <div class="mb-4">
+                <label class="block mb-2 font-semibold">選擇測驗模式：</label>
+                <div class="flex gap-4">
+                    <button class="flex-1 py-3 border rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 border-blue-500 bg-blue-50 dark:bg-gray-700" id="modePractice">練習模式 (即時詳解)</button>
+                    <button class="flex-1 py-3 border rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 border-gray-300" id="modeExam">模擬考模式 (交卷算分)</button>
+                </div>
+            </div>
+            <button id="startBtn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">開始刷題</button>
+        </div>
+
+        <!-- 測驗區 -->
+        <div id="quizScreen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <span class="font-bold text-lg text-blue-600 dark:text-blue-400" id="questionCount">題目: 1 / 2</span>
+                <span id="timer" class="hidden font-mono text-red-500">00:00</span>
+            </div>
+            
+            <div class="mb-6">
+                <span class="inline-block bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm font-semibold mb-3" id="qCategory">科目</span>
+                <h3 class="text-xl font-medium leading-relaxed" id="qText">題目內容...</h3>
+            </div>
+
+            <div class="space-y-3" id="optionsContainer">
+                <!-- 選項會由 JS 動態生成 -->
+            </div>
+
+            <div id="explanationBox" class="hidden mt-6 p-4 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg">
+                <h4 class="font-bold text-green-800 dark:text-green-100 mb-2">✅ 解答與解析：</h4>
+                <p id="expText" class="text-green-700 dark:text-green-200"></p>
+                <button id="nextBtn" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">下一題 ➡️</button>
+            </div>
+        </div>
+
+        <!-- 成績結算區 -->
+        <div id="resultScreen" class="hidden text-center">
+            <h2 class="text-3xl font-bold mb-4">測驗結束！</h2>
+            <div class="text-6xl font-black text-blue-600 dark:text-blue-400 mb-6" id="scoreDisplay">100</div>
+            <p class="text-lg mb-6" id="resultSummary">答對 2 題，答錯 0 題</p>
+            <button onclick="location.reload()" class="bg-gray-800 dark:bg-gray-200 text-white dark:text-black font-bold py-3 px-8 rounded-lg shadow hover:opacity-80">返回首頁</button>
+        </div>
+    </main>
+
+    <script>
+        // --- 題庫資料 (從您提供的 PDF 解析出的前幾題作為範例) ---
+        const questionBank = [
+            {
+                id: "114-1-01",
+                subject: "第一科:人工智慧基礎概論",
+                question: "在人工智慧系統的決策流程中,下列哪一種情境最符合「人在迴圈上 (Human-over-the-loop)」所強調的監督機制?",
+                options: [
+                    "(A) AI系統只能提供建議,人類需主動下達命令才能進行決策;",
+                    "(B) 人類對AI的運行進行日常監督,必要時可立即介入修正或干預;",
+                    "(C) 人類平時不參與AI的運作,僅在發生異常或重大錯誤時才接手控制;",
+                    "(D) AI的所有判斷與行動在執行前,皆須經過人類逐一審核與批准"
+                ],
+                answer: 1, // (B) 索引為 1
+                explanation: "「人在迴圈上 (Human-over-the-loop)」強調的是人類扮演監督者的角色，系統可自動運行，但人類隨時監控並具備推翻或介入修改的權力。"
+            },
+            {
+                id: "114-2-01",
+                subject: "第二科:生成式AI應用與規劃",
+                question: "在Low Code 平台的開發應用設計中,關於「模型(Model)」,下列敘述何者最符合實際情況?",
+                options: [
+                    "(A) 模型僅扮演設計視覺化的輔助工具,對應用邏輯的影響有限;",
+                    "(B) 模型是用來抽象描述資料結構、業務流程與介面邏輯的核心元素,影響應用的設計與維護;",
+                    "(C) 模型僅依循UML等傳統建模方式,缺乏針對Low Code 環境的延展性;",
+                    "(D) 模型在Low Code 平台中已被自動程式碼生成全面取代,實際價值有限"
+                ],
+                answer: 1, // (B) 索引為 1
+                explanation: "在低程式碼 (Low Code) 平台中，模型 (Model) 不僅僅是視覺化，而是定義底層資料庫結構、業務規則與關聯的核心骨幹。"
+            }
+        ];
+
+        // --- 應用程式邏輯 ---
+        let currentMode = 'practice'; // practice 或 exam
+        let currentQIndex = 0;
+        let score = 0;
+        let examAnswers = []; 
+
+        // DOM 元素
+        const themeToggle = document.getElementById('themeToggle');
+        const modePracticeBtn = document.getElementById('modePractice');
+        const modeExamBtn = document.getElementById('modeExam');
+        const startBtn = document.getElementById('startBtn');
+        
+        const homeScreen = document.getElementById('homeScreen');
+        const quizScreen = document.getElementById('quizScreen');
+        const resultScreen = document.getElementById('resultScreen');
+
+        // 深淺模式切換邏輯
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // 模式選擇
+        modePracticeBtn.addEventListener('click', () => setMode('practice'));
+        modeExamBtn.addEventListener('click', () => setMode('exam'));
+
+        function setMode(mode) {
+            currentMode = mode;
+            if(mode === 'practice') {
+                modePracticeBtn.classList.replace('border-gray-300', 'border-blue-500');
+                modePracticeBtn.classList.add('bg-blue-50', 'dark:bg-gray-700');
+                modeExamBtn.classList.replace('border-blue-500', 'border-gray-300');
+                modeExamBtn.classList.remove('bg-blue-50', 'dark:bg-gray-700');
+            } else {
+                modeExamBtn.classList.replace('border-gray-300', 'border-blue-500');
+                modeExamBtn.classList.add('bg-blue-50', 'dark:bg-gray-700');
+                modePracticeBtn.classList.replace('border-blue-500', 'border-gray-300');
+                modePracticeBtn.classList.remove('bg-blue-50', 'dark:bg-gray-700');
+            }
+        }
+
+        // 開始測驗
+        startBtn.addEventListener('click', () => {
+            homeScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            loadQuestion();
+        });
+
+        // 載入題目
+        function loadQuestion() {
+            const q = questionBank[currentQIndex];
+            document.getElementById('questionCount').innerText = `題目: ${currentQIndex + 1} / ${questionBank.length}`;
+            document.getElementById('qCategory').innerText = q.subject;
+            document.getElementById('qText').innerText = q.question;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            document.getElementById('explanationBox').classList.add('hidden');
+
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition dark:border-gray-600";
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // 處理答題
+        function handleAnswer(selectedIndex, btnElement) {
+            const q = questionBank[currentQIndex];
+            const buttons = document.getElementById('optionsContainer').children;
+            
+            // 鎖定所有按鈕
+            Array.from(buttons).forEach(b => b.disabled = true);
+
+            if (currentMode === 'practice') {
+                // 練習模式：即時顯示解答
+                if (selectedIndex === q.answer) {
+                    btnElement.classList.add('bg-green-100', 'border-green-500', 'dark:bg-green-900');
+                    score++;
+                } else {
+                    btnElement.classList.add('bg-red-100', 'border-red-500', 'dark:bg-red-900');
+                    buttons[q.answer].classList.add('bg-green-100', 'border-green-500', 'dark:bg-green-900');
+                }
+                document.getElementById('explanationBox').classList.remove('hidden');
+                document.getElementById('expText').innerText = `正確答案：選項 ${String.fromCharCode(65 + q.answer)}\n\n${q.explanation}`;
+            } else {
+                // 模擬考模式：標記選擇並直接進下一題
+                btnElement.classList.add('bg-blue-100', 'border-blue-500', 'dark:bg-blue-900');
+                if (selectedIndex === q.answer) score++;
+                setTimeout(goNext, 500); // 半秒後自動下一題
+            }
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', goNext);
+
+        function goNext() {
+            currentQIndex++;
+            if (currentQIndex < questionBank.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            const finalScore = Math.round((score / questionBank.length) * 100);
+            document.getElementById('scoreDisplay').innerText = finalScore;
+            document.getElementById('resultSummary').innerText = `總共 ${questionBank.length} 題，您答對了 ${score} 題。`;
+        }
+    </script>
+</body>
+</html>
