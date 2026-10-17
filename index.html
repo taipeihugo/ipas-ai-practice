@@ -1,364 +1,941 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI應用規劃師 - 模擬測驗系統 v2</title>
-    <style>
-        :root {
-            --primary-color: #4a90e2;
-            --secondary-color: #f5f5f5;
-            --text-color: #333;
-            --success-color: #2ecc71;
-            --danger-color: #e74c3c;
-            --border-radius: 8px;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            color: var(--text-color);
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .card {
-            background: #fff;
-            padding: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        h1, h2, h3 { color: #2c3e50; }
-        .form-group { margin-bottom: 15px; }
-        label { font-weight: bold; display: block; margin-bottom: 5px; }
-        select, button {
-            width: 100%; padding: 10px; border-radius: 4px;
-            border: 1px solid #ccc; font-size: 16px;
-        }
-        button {
-            background-color: var(--primary-color); color: #fff; border: none;
-            cursor: pointer; font-weight: bold; transition: background 0.3s; margin-top: 10px;
-        }
-        button:hover { background-color: #357abd; }
-        button.secondary { background-color: #95a5a6; }
-        button.secondary:hover { background-color: #7f8c8d; }
-        .checkbox-list {
-            max-height: 200px; overflow-y: auto; border: 1px solid #ddd;
-            padding: 10px; border-radius: 4px; background: #fafafa;
-        }
-        .checkbox-item { margin-bottom: 5px; display: flex; align-items: center; }
-        .checkbox-item input { margin-right: 10px; width: auto; }
-        .question-title { font-size: 1.2em; margin-bottom: 15px; }
-        .option-label {
-            display: block; padding: 12px; margin-bottom: 10px; background: var(--secondary-color);
-            border: 1px solid #ddd; border-radius: 4px; cursor: pointer; transition: background 0.2s;
-        }
-        .option-label:hover { background: #e9ecef; }
-        .option-label input { margin-right: 10px; }
-        .nav-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        .nav-buttons button { margin: 0; }
-        .hidden { display: none !important; }
-        .progress-bar {
-            height: 10px; background: #e0e0e0; border-radius: 5px; margin-bottom: 20px; overflow: hidden;
-        }
-        .progress-fill { height: 100%; background: var(--primary-color); width: 0%; transition: width 0.3s ease; }
-        .result-item {
-            border-left: 4px solid var(--danger-color); padding: 10px 15px; margin-bottom: 15px;
-            background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .result-item.correct { border-left-color: var(--success-color); }
-        .explanation { background: #e8f4f8; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 0.9em; color: #31708f; }
-        .badge { display: inline-block; padding: 3px 8px; font-size: 0.8em; background: #34495e; color: #fff; border-radius: 12px; margin-bottom: 10px; }
-        .badge.level-badge { background: #e67e22; }
-        @media (min-width: 768px) {
-            .nav-buttons { flex-direction: row; justify-content: space-between; }
-            .nav-buttons button { max-width: 200px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="iPAS AI 應用規劃師能力鑑定模擬測驗：歷屆公告試題、章節練習、模擬考計時、錯題本與收藏。">
+<meta name="theme-color" content="#4f46e5">
+<title>iPAS AI 應用規劃師 模擬測驗</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%234f46e5'/><text x='32' y='43' font-size='30' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'>AI</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --primary: #4f46e5;
+  --primary-soft: #eef2ff;
+  --primary-text: #4338ca;
+  --success: #16a34a;
+  --success-soft: #dcfce7;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+  --warn: #d97706;
+  --warn-soft: #fef3c7;
+  --shadow: 0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.06);
+  --radius: 16px;
+  --radius-sm: 10px;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #0b1020;
+  --surface: #131a2e;
+  --surface-2: #19223a;
+  --border: #26314f;
+  --text: #e5e9f5;
+  --muted: #8b97b5;
+  --primary: #818cf8;
+  --primary-soft: #1f2547;
+  --primary-text: #a5b4fc;
+  --success: #4ade80;
+  --success-soft: #12301f;
+  --danger: #f87171;
+  --danger-soft: #3a1717;
+  --warn: #fbbf24;
+  --warn-soft: #3a2c0d;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: 'Noto Sans TC', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  transition: background .2s, color .2s;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+.hidden { display: none !important; }
+.container { max-width: 880px; margin: 0 auto; padding: 0 16px 48px; }
+
+/* ---------- Top bar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-inner { max-width: 880px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 1.05rem; cursor: pointer; user-select: none; }
+.brand-logo {
+  width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: .85rem; font-weight: 900;
+}
+.brand small { display: block; font-weight: 500; font-size: .72rem; color: var(--muted); line-height: 1.2; }
+.spacer { flex: 1; }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface); display: grid; place-items: center; font-size: 1.05rem;
+}
+.icon-btn:hover { border-color: var(--primary); }
+
+/* ---------- Hero ---------- */
+.hero {
+  margin: 24px 0 20px; padding: 28px; border-radius: var(--radius);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 60%, #a855f7 100%);
+  color: #fff; position: relative; overflow: hidden;
+}
+.hero::after {
+  content: ""; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px;
+  border-radius: 50%; background: rgba(255,255,255,.08);
+}
+.hero h1 { margin: 0 0 6px; font-size: 1.6rem; font-weight: 900; letter-spacing: .5px; }
+.hero p { margin: 0; opacity: .9; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; position: relative; z-index: 1; }
+.stat { background: rgba(255,255,255,.14); border-radius: 12px; padding: 10px 12px; }
+.stat b { display: block; font-size: 1.4rem; line-height: 1.2; }
+.stat span { font-size: .78rem; opacity: .85; }
+
+/* ---------- Cards & sections ---------- */
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 22px; margin-bottom: 16px;
+}
+.section-title { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 1.05rem; font-weight: 700; }
+.section-title .step {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--primary-soft); color: var(--primary-text);
+  display: grid; place-items: center; font-size: .8rem; font-weight: 700;
+}
+.hint { color: var(--muted); font-size: .85rem; }
+
+/* Mode cards */
+.modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.mode {
+  border: 2px solid var(--border); background: var(--surface-2); border-radius: 14px; padding: 14px 12px;
+  text-align: left; transition: border-color .15s, transform .15s, background .15s; position: relative;
+}
+.mode:hover { transform: translateY(-2px); }
+.mode .emoji { font-size: 1.5rem; }
+.mode b { display: block; margin-top: 4px; }
+.mode span { display: block; font-size: .78rem; color: var(--muted); line-height: 1.45; margin-top: 2px; }
+.mode.active { border-color: var(--primary); background: var(--primary-soft); }
+.mode .count {
+  position: absolute; top: 10px; right: 10px; font-size: .72rem; font-weight: 700;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 0 8px;
+}
+
+/* Segmented control */
+.seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 4px; gap: 4px; flex-wrap: wrap; }
+.seg button { border: 0; background: transparent; padding: 6px 14px; border-radius: 9px; font-size: .9rem; color: var(--muted); }
+.seg button.active { background: var(--surface); color: var(--primary-text); font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.row { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; margin-bottom: 16px; }
+.row > label { font-weight: 700; font-size: .9rem; min-width: 64px; }
+
+/* Chips */
+.group { margin-bottom: 14px; }
+.group-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px; }
+.group-head b { font-size: .9rem; }
+.link-btn { border: 0; background: none; color: var(--primary-text); font-size: .82rem; padding: 2px 4px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1.5px solid var(--border); background: var(--surface); border-radius: 99px;
+  padding: 5px 12px; font-size: .86rem; display: inline-flex; align-items: center; gap: 6px; transition: all .15s;
+}
+.chip .n { font-size: .72rem; color: var(--muted); background: var(--surface-2); border-radius: 99px; padding: 0 7px; }
+.chip.on { border-color: var(--primary); background: var(--primary-soft); color: var(--primary-text); font-weight: 500; }
+.chip.on .n { background: var(--surface); color: var(--primary-text); }
+
+/* Toggles */
+.toggles { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+.switch { display: inline-flex; align-items: center; gap: 8px; font-size: .9rem; cursor: pointer; user-select: none; }
+.switch input { appearance: none; width: 38px; height: 22px; border-radius: 99px; background: var(--border); position: relative; transition: background .15s; cursor: pointer; margin: 0; }
+.switch input::after { content: ""; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.switch input:checked { background: var(--primary); }
+.switch input:checked::after { transform: translateX(16px); }
+select.input { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 6px 10px; }
+
+/* Buttons */
+.btn {
+  border: 0; border-radius: 12px; padding: 12px 20px; font-weight: 700; font-size: 1rem;
+  background: var(--primary); color: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: filter .15s, transform .1s;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+.btn.ghost { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+.btn.success { background: var(--success); }
+.btn.block { width: 100%; }
+.start-bar { display: flex; align-items: center; gap: 12px; }
+.start-bar .btn { flex: 1; padding: 14px; font-size: 1.05rem; }
+.pool-info { font-size: .9rem; color: var(--muted); white-space: nowrap; }
+.pool-info b { color: var(--primary-text); font-size: 1.1rem; }
+
+/* ---------- Quiz ---------- */
+.quiz-head { display: flex; align-items: center; gap: 10px; margin: 20px 0 10px; }
+.quiz-head .qno { font-weight: 900; font-size: 1.05rem; }
+.quiz-head .qno span { color: var(--muted); font-weight: 500; }
+.timer { font-variant-numeric: tabular-nums; font-weight: 700; padding: 4px 12px; border-radius: 99px; background: var(--surface); border: 1px solid var(--border); }
+.timer.low { color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
+.progress { height: 6px; border-radius: 99px; background: var(--border); overflow: hidden; margin-bottom: 16px; }
+.progress > div { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0; transition: width .25s; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.tag { font-size: .74rem; padding: 2px 10px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); }
+.tag.level { background: var(--warn-soft); color: var(--warn); border-color: transparent; font-weight: 700; }
+.tag.session { background: var(--primary-soft); color: var(--primary-text); border-color: transparent; }
+.q-text { font-size: 1.08rem; font-weight: 500; margin: 0 0 18px; white-space: pre-wrap; }
+.options { display: grid; gap: 10px; }
+.opt {
+  display: flex; gap: 12px; align-items: flex-start; text-align: left; width: 100%;
+  border: 1.5px solid var(--border); background: var(--surface); border-radius: 12px; padding: 12px 14px;
+  transition: border-color .15s, background .15s;
+}
+.opt:hover:not(:disabled) { border-color: var(--primary); }
+.opt .key {
+  flex: none; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
+  background: var(--surface-2); border: 1px solid var(--border); font-weight: 700; font-size: .85rem;
+}
+.opt.selected { border-color: var(--primary); background: var(--primary-soft); }
+.opt.selected .key { background: var(--primary); color: #fff; border-color: var(--primary); }
+.opt.correct { border-color: var(--success); background: var(--success-soft); }
+.opt.correct .key { background: var(--success); color: #fff; border-color: var(--success); }
+.opt.wrong { border-color: var(--danger); background: var(--danger-soft); }
+.opt.wrong .key { background: var(--danger); color: #fff; border-color: var(--danger); }
+.opt:disabled { cursor: default; }
+.explain {
+  margin-top: 16px; border-radius: 12px; padding: 14px 16px; background: var(--surface-2);
+  border-left: 4px solid var(--primary); font-size: .95rem;
+}
+.explain .verdict { font-weight: 900; margin-bottom: 4px; }
+.explain .verdict.ok { color: var(--success); }
+.explain .verdict.ng { color: var(--danger); }
+.explain .src { margin-top: 8px; font-size: .78rem; color: var(--muted); }
+.quiz-nav { display: flex; gap: 10px; margin-top: 18px; }
+.quiz-nav .btn { flex: 1; }
+.kbd-hint { text-align: center; color: var(--muted); font-size: .78rem; margin-top: 10px; }
+kbd { font-family: inherit; font-size: .72rem; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--surface); }
+
+/* Navigator grid */
+.nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; }
+.nav-grid button {
+  height: 38px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface); font-size: .85rem; font-weight: 500;
+}
+.nav-grid button.answered { background: var(--primary-soft); color: var(--primary-text); border-color: transparent; }
+.nav-grid button.ok { background: var(--success-soft); color: var(--success); border-color: transparent; }
+.nav-grid button.ng { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
+.nav-grid button.current { outline: 2px solid var(--primary); outline-offset: 1px; }
+.nav-grid button.marked { position: relative; }
+.nav-grid button.marked::after { content: "★"; position: absolute; top: -7px; right: -3px; font-size: .7rem; color: var(--warn); }
+details.nav-panel summary { cursor: pointer; font-weight: 700; font-size: .9rem; list-style: none; display: flex; align-items: center; gap: 6px; }
+details.nav-panel summary::-webkit-details-marker { display: none; }
+details.nav-panel summary::after { content: "▾"; color: var(--muted); }
+details.nav-panel[open] summary { margin-bottom: 12px; }
+
+/* ---------- Result ---------- */
+.result-top { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+.ring { width: 140px; height: 140px; position: relative; }
+.ring svg { transform: rotate(-90deg); }
+.ring .val { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+.ring .val b { font-size: 2.2rem; font-weight: 900; line-height: 1; }
+.ring .val span { font-size: .78rem; color: var(--muted); }
+.result-msg { font-size: 1.25rem; font-weight: 900; margin: 0 0 4px; }
+.result-sub { color: var(--muted); margin: 0 0 14px; }
+.mini-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.mini-stats div { background: var(--surface-2); border-radius: 10px; padding: 6px 12px; font-size: .85rem; }
+.mini-stats b { font-size: 1.05rem; }
+.bars { display: grid; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: minmax(120px, 1.2fr) 2fr auto; gap: 10px; align-items: center; font-size: .86rem; }
+.bar { height: 10px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.bar > div { height: 100%; border-radius: 99px; }
+.review-item { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; border-left: 4px solid var(--danger); background: var(--surface); }
+.review-item.ok { border-left-color: var(--success); }
+.review-item .q { font-weight: 500; margin: 6px 0; }
+.review-item .ans { font-size: .88rem; }
+.review-item .ans .ok { color: var(--success); font-weight: 700; }
+.review-item .ans .ng { color: var(--danger); font-weight: 700; }
+.review-item .opts { font-size: .86rem; color: var(--muted); margin: 6px 0; padding-left: 0; list-style: none; }
+.review-item .opts li.right { color: var(--success); font-weight: 500; }
+.review-item .opts li.mine { color: var(--danger); }
+.result-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+/* Data section */
+.data-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.data-actions .btn { padding: 8px 14px; font-size: .88rem; }
+.footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 28px; }
+.footer a { color: var(--primary-text); }
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); opacity: 0;
+  background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 12px; font-size: .9rem;
+  transition: all .25s; pointer-events: none; z-index: 50; max-width: calc(100% - 32px);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.empty { text-align: center; color: var(--muted); padding: 24px 0; }
+.loading { text-align: center; padding: 60px 0; color: var(--muted); }
+
+@media (max-width: 720px) {
+  .modes { grid-template-columns: repeat(2, 1fr); }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .hero { padding: 22px 18px; }
+  .hero h1 { font-size: 1.3rem; }
+  .card { padding: 18px 16px; }
+  .result-top { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .mini-stats { justify-content: center; }
+  .result-actions { grid-template-columns: 1fr; }
+  .bar-row { grid-template-columns: 1fr auto; }
+  .bar-row .bar { grid-column: 1 / -1; grid-row: 2; }
+  .start-bar { flex-direction: column; align-items: stretch; text-align: center; }
+  .kbd-hint { display: none; }
+}
+</style>
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1>AI應用規劃師 模擬測驗</h1>
-        <p>支援初級/中級切換、依屆次或章節測驗</p>
-    </header>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand" onclick="goHome()" title="回首頁">
+      <div class="brand-logo">AI</div>
+      <div>iPAS AI 應用規劃師<small>能力鑑定模擬測驗</small></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="切換深色／淺色模式" aria-label="切換主題">🌙</button>
+  </div>
+</header>
 
-    <div id="settings-view" class="card">
-        <h2>測驗設定</h2>
-        
-        <div class="form-group">
-            <label>測驗模式</label>
-            <div>
-                <label style="font-weight: normal; display: inline-block; margin-right: 15px;">
-                    <input type="radio" name="mode" value="normal" checked onchange="toggleMode()"> 一般測驗
-                </label>
-                <label style="font-weight: normal; display: inline-block;">
-                    <input type="radio" name="mode" value="mistakes" onchange="toggleMode()"> 錯題複習 (目前錯題數: <span id="mistake-count">0</span>)
-                </label>
-            </div>
-        </div>
+<main class="container">
+  <div id="loading" class="loading">題庫載入中…</div>
 
-        <div id="normal-settings">
-            <div class="form-group">
-                <label>測驗級別</label>
-                <select id="level-select" onchange="updateFilters()">
-                    <option value="初級" selected>初級 (Beginner)</option>
-                    <option value="中級">中級 (Intermediate)</option>
-                    <option value="all">不限 (混合測驗)</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>測驗範圍分類</label>
-                <div>
-                    <label style="font-weight: normal; margin-right: 15px;">
-                        <input type="radio" name="filterMode" value="chapter" checked onchange="toggleFilterMode()"> 依科目章節挑選
-                    </label>
-                    <label style="font-weight: normal;">
-                        <input type="radio" name="filterMode" value="session" onchange="toggleFilterMode()"> 依考試屆次挑選
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-group" id="chapter-selection-group">
-                <label>選擇章節 (將所選級別的考古題打散至章節)</label>
-                <div class="checkbox-list" id="chapter-list"></div>
-                <button class="secondary" style="margin-top: 5px; padding: 5px;" onclick="selectAll('chapter')">全選 / 取消全選</button>
-            </div>
-
-            <div class="form-group hidden" id="session-selection-group">
-                <label>選擇考試屆次 (完整模擬歷屆試題)</label>
-                <div class="checkbox-list" id="session-list"></div>
-                <button class="secondary" style="margin-top: 5px; padding: 5px;" onclick="selectAll('session')">全選 / 取消全選</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>測驗題數</label>
-            <select id="question-count">
-                <option value="5">5 題</option>
-                <option value="10">10 題</option>
-                <option value="20">20 題</option>
-                <option value="all" selected>全部符合條件的題目</option>
-            </select>
-        </div>
-        <button onclick="startQuiz()">開始測驗</button>
+  <!-- ================= 首頁：測驗設定 ================= -->
+  <section id="home-view" class="hidden">
+    <div class="hero">
+      <h1>今天也來刷幾題吧 💪</h1>
+      <p>收錄歷屆公告試題與詳解，支援章節練習、模擬考計時與錯題本。</p>
+      <div class="stats">
+        <div class="stat"><b id="st-total">0</b><span>題庫總數</span></div>
+        <div class="stat"><b id="st-done">0</b><span>已練習題數</span></div>
+        <div class="stat"><b id="st-acc">—</b><span>累積正確率</span></div>
+        <div class="stat"><b id="st-mistake">0</b><span>待複習錯題</span></div>
+      </div>
     </div>
 
-    <div id="quiz-view" class="card hidden">
-        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-            <div>
-                <span class="badge level-badge" id="current-level">級別</span>
-                <span class="badge" id="current-chapter">章節</span>
-                <span class="badge" id="current-session" style="background: #16a085;">屆次</span>
-            </div>
-            <span style="font-weight: bold; color: var(--primary-color);">題目 <span id="current-q-num">1</span> / <span id="total-q-num">10</span></span>
-        </div>
-        <div class="question-title" id="question-text">題目內容</div>
-        <div id="options-container"></div>
-        <div class="nav-buttons">
-            <button id="btn-prev" class="secondary" onclick="prevQuestion()">上一題</button>
-            <button id="btn-next" onclick="nextQuestion()">下一題</button>
-            <button id="btn-submit" class="hidden" style="background-color: var(--success-color);" onclick="submitQuiz()">交卷</button>
-        </div>
+    <div class="card">
+      <h2 class="section-title"><span class="step">1</span>選擇模式</h2>
+      <div class="modes" id="modes">
+        <button class="mode active" data-mode="practice"><div class="emoji">📖</div><b>練習模式</b><span>選完立即對答案、看解析</span></button>
+        <button class="mode" data-mode="exam"><div class="emoji">⏱️</div><b>模擬考</b><span>可計時，交卷後才公布成績</span></button>
+        <button class="mode" data-mode="mistakes"><span class="count" id="mc-mistakes">0</span><div class="emoji">🔁</div><b>錯題複習</b><span>答對一次即自動移出錯題本</span></button>
+        <button class="mode" data-mode="bookmarks"><span class="count" id="mc-bookmarks">0</span><div class="emoji">⭐</div><b>收藏題目</b><span>複習你標記的重點題</span></button>
+      </div>
     </div>
 
-    <div id="result-view" class="hidden">
-        <div class="card" style="text-align: center;">
-            <h2>測驗結果</h2>
-            <h1 style="font-size: 3em; color: var(--primary-color); margin: 10px 0;"><span id="score">0</span> 分</h1>
-            <p>答對 <span id="correct-count">0</span> 題 / 共 <span id="total-result-count">0</span> 題</p>
-            <div class="nav-buttons" style="justify-content: center; flex-direction: row; gap: 10px;">
-                <button onclick="returnToMenu()">返回主選單</button>
-                <button onclick="reviewMistakesMode()" class="secondary">重新測驗錯題</button>
-            </div>
+    <div class="card" id="scope-card">
+      <h2 class="section-title"><span class="step">2</span>選擇範圍</h2>
+      <div class="row">
+        <label>級別</label>
+        <div class="seg" id="level-seg"></div>
+      </div>
+      <div class="row">
+        <label>分類方式</label>
+        <div class="seg" id="filter-seg">
+          <button data-v="chapter" class="active">依科目章節</button>
+          <button data-v="session">依考試屆次</button>
         </div>
-        <div id="review-container"></div>
+      </div>
+      <div id="chip-groups"></div>
     </div>
-</div>
+
+    <div class="card">
+      <h2 class="section-title"><span class="step">3</span>測驗設定</h2>
+      <div class="row">
+        <label>題數</label>
+        <div class="seg" id="count-seg">
+          <button data-v="10">10 題</button>
+          <button data-v="20" class="active">20 題</button>
+          <button data-v="50">50 題</button>
+          <button data-v="all">全部</button>
+        </div>
+      </div>
+      <div class="row" id="timer-row">
+        <label>計時</label>
+        <select class="input" id="timer-select">
+          <option value="0">不計時</option>
+          <option value="30">30 分鐘</option>
+          <option value="60" selected>60 分鐘</option>
+          <option value="90">90 分鐘</option>
+        </select>
+        <span class="hint">時間到會自動交卷</span>
+      </div>
+      <div class="toggles">
+        <label class="switch"><input type="checkbox" id="opt-shuffle-q" checked>題目隨機排序</label>
+        <label class="switch"><input type="checkbox" id="opt-shuffle-o">選項隨機排序</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="start-bar">
+        <div class="pool-info">符合條件 <b id="pool-count">0</b> 題</div>
+        <button class="btn" id="start-btn" onclick="startQuiz()">開始測驗 →</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">💾 學習紀錄</h2>
+      <p class="hint" style="margin-top:-6px">紀錄只存在這台裝置的瀏覽器中。換裝置前可先匯出，再到新裝置匯入。</p>
+      <div class="data-actions">
+        <button class="btn ghost" onclick="exportData()">⬇️ 匯出紀錄</button>
+        <button class="btn ghost" onclick="document.getElementById('import-file').click()">⬆️ 匯入紀錄</button>
+        <button class="btn ghost" onclick="resetData()">🗑️ 清除全部紀錄</button>
+        <input type="file" id="import-file" accept="application/json,.json" class="hidden" onchange="importData(event)">
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 作答畫面 ================= -->
+  <section id="quiz-view" class="hidden">
+    <div class="quiz-head">
+      <button class="icon-btn" onclick="quitQuiz()" title="離開測驗" aria-label="離開測驗">✕</button>
+      <div class="qno">第 <span id="q-cur" style="color:var(--text);font-weight:900">1</span> <span>/ <span id="q-total">0</span> 題</span></div>
+      <div class="spacer"></div>
+      <div class="timer hidden" id="timer">00:00</div>
+      <button class="icon-btn" id="mark-btn" onclick="toggleBookmark()" title="收藏此題" aria-label="收藏此題">☆</button>
+    </div>
+    <div class="progress"><div id="progress"></div></div>
+
+    <div class="card">
+      <div class="tags" id="q-tags"></div>
+      <p class="q-text" id="q-text"></p>
+      <div class="options" id="q-options"></div>
+      <div id="q-explain"></div>
+      <div class="quiz-nav">
+        <button class="btn ghost" id="btn-prev" onclick="go(-1)">← 上一題</button>
+        <button class="btn" id="btn-next" onclick="go(1)">下一題 →</button>
+        <button class="btn success hidden" id="btn-submit" onclick="submitQuiz()">交卷 ✓</button>
+      </div>
+      <div class="kbd-hint"><kbd>A</kbd>–<kbd>D</kbd> 或 <kbd>1</kbd>–<kbd>4</kbd> 選答　<kbd>←</kbd> <kbd>→</kbd> 切換題目　<kbd>S</kbd> 收藏</div>
+    </div>
+
+    <div class="card">
+      <details class="nav-panel" id="nav-panel">
+        <summary>題目總覽</summary>
+        <div class="nav-grid" id="nav-grid"></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================= 成績畫面 ================= -->
+  <section id="result-view" class="hidden">
+    <div class="card" style="margin-top:20px">
+      <div class="result-top">
+        <div class="ring">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="60" fill="none" stroke="var(--border)" stroke-width="12"/>
+            <circle id="ring-fg" cx="70" cy="70" r="60" fill="none" stroke="var(--primary)" stroke-width="12" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377" style="transition:stroke-dashoffset .8s ease"/>
+          </svg>
+          <div class="val"><div><b id="r-score">0</b><br><span>分</span></div></div>
+        </div>
+        <div>
+          <p class="result-msg" id="r-msg"></p>
+          <p class="result-sub" id="r-sub"></p>
+          <div class="mini-stats">
+            <div>✅ 答對 <b id="r-ok">0</b></div>
+            <div>❌ 答錯 <b id="r-ng">0</b></div>
+            <div>⬜ 未答 <b id="r-skip">0</b></div>
+            <div>⏱️ <b id="r-time">0:00</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="result-actions">
+        <button class="btn" onclick="retryWrong()" id="btn-retry">重做本次錯題</button>
+        <button class="btn ghost" onclick="restartSame()">再考一次</button>
+        <button class="btn ghost" onclick="goHome()">回首頁</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">📊 各章節表現</h2>
+      <div class="bars" id="r-bars"></div>
+    </div>
+
+    <div class="card">
+      <div class="group-head" style="margin-bottom:14px">
+        <h2 class="section-title" style="margin:0">📝 逐題檢討</h2>
+        <div class="seg" id="review-seg">
+          <button data-v="wrong" class="active">錯題</button>
+          <button data-v="all">全部</button>
+        </div>
+      </div>
+      <div id="r-review"></div>
+    </div>
+  </section>
+
+  <p class="footer">
+    題目來源：iPAS 經濟部產業人才能力鑑定公告試題，解析為學習整理，僅供練習參考。<br>
+    <a href="https://github.com/taipeihugo/ipas-ai-practice" target="_blank" rel="noopener">GitHub 原始碼</a> · 歡迎回報錯誤或貢獻題目
+  </p>
+</main>
+
+<div class="toast" id="toast"></div>
 
 <script>
-    let allQuestions = [], currentQuizQuestions = [], userAnswers = {}, currentIndex = 0;
-    let mistakeIds = JSON.parse(localStorage.getItem('ai_quiz_mistakes') || '[]');
+'use strict';
+/* ================= 狀態與儲存 ================= */
+const KEY = { mistakes: 'ai_quiz_mistakes', bookmarks: 'ai_quiz_bookmarks', stats: 'ai_quiz_stats', theme: 'ai_quiz_theme', prefs: 'ai_quiz_prefs' };
+const store = {
+  get(k, fallback) { try { const v = localStorage.getItem(k); return v === null ? fallback : JSON.parse(v); } catch { return fallback; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* 隱私模式等情況下忽略 */ } }
+};
 
-    // 初始化讀取資料
-    fetch('questions.json').then(res => res.json()).then(data => {
-        allQuestions = data;
-        document.getElementById('mistake-count').innerText = mistakeIds.length;
-        updateFilters(); // 初始化過濾選單
-    }).catch(e => alert('無法載入題庫 questions.json'));
+let allQuestions = [];
+let mistakeIds = new Set(store.get(KEY.mistakes, []));
+let bookmarkIds = new Set(store.get(KEY.bookmarks, []));
+let stats = store.get(KEY.stats, {});          // { id: { c: 答對次數, w: 答錯次數 } }
+const prefs = Object.assign({ mode: 'practice', level: '初級', filter: 'chapter', count: '20', timer: '60', shuffleQ: true, shuffleO: false }, store.get(KEY.prefs, {}));
+const selected = { chapter: null, session: null }; // Set，null 代表預設全選
 
-    // 根據選擇的「級別」更新「章節」與「屆次」的選項
-    function updateFilters() {
-        const level = document.getElementById('level-select').value;
-        let filteredQ = allQuestions;
-        if (level !== 'all') {
-            filteredQ = allQuestions.filter(q => q.level === level);
-        }
-        
-        // 更新章節選單
-        const chapters = [...new Set(filteredQ.map(q => q.chapter))].sort();
-        renderCheckboxes('chapter-list', 'chapter', chapters);
-        
-        // 更新屆次選單
-        const sessions = [...new Set(filteredQ.map(q => q.exam_session))].sort();
-        renderCheckboxes('session-list', 'session', sessions);
+let quiz = null; // { mode, questions, answers, order, index, startAt, deadline, timerId, submitted }
+
+const $ = id => document.getElementById(id);
+const el = (tag, props = {}, ...children) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') n.className = v;
+    else if (k === 'text') n.textContent = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  children.flat().forEach(c => c != null && n.append(c));
+  return n;
+};
+const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const fmtTime = s => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60); return `${m}:${String(s % 60).padStart(2, '0')}`; };
+const toast = msg => { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200); };
+const saveAll = () => { store.set(KEY.mistakes, [...mistakeIds]); store.set(KEY.bookmarks, [...bookmarkIds]); store.set(KEY.stats, stats); };
+const savePrefs = () => store.set(KEY.prefs, prefs);
+const chapterSort = (a, b) => a.localeCompare(b, 'zh-Hant', { numeric: true });
+
+/* ================= 主題 ================= */
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  $('theme-btn').textContent = t === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  store.set(KEY.theme, t); applyTheme(t);
+}
+applyTheme(store.get(KEY.theme, null) || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+
+/* ================= 載入題庫 ================= */
+fetch('questions.json')
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(data => {
+    allQuestions = data;
+    $('loading').classList.add('hidden');
+    initHome();
+    show('home-view');
+  })
+  .catch(() => {
+    $('loading').innerHTML = '⚠️ 無法載入題庫 <code>questions.json</code>。<br><span class="hint">若是直接雙擊開啟 HTML 檔，瀏覽器會阻擋讀取；請改用 GitHub Pages，或在資料夾內執行 <code>python -m http.server</code> 後開啟 http://localhost:8000。</span>';
+  });
+
+function show(id) {
+  ['home-view', 'quiz-view', 'result-view'].forEach(v => $(v).classList.toggle('hidden', v !== id));
+  window.scrollTo({ top: 0 });
+}
+
+/* ================= 首頁 ================= */
+function bindSeg(id, key, onChange) {
+  const seg = $(id);
+  seg.querySelectorAll('button').forEach(b => {
+    b.classList.toggle('active', b.dataset.v === prefs[key]);
+    b.onclick = () => {
+      seg.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      prefs[key] = b.dataset.v; savePrefs(); onChange && onChange();
+    };
+  });
+}
+
+function initHome() {
+  // 級別選項依題庫動態生成
+  const levels = [...new Set(allQuestions.map(q => q.level))].sort((a, b) => a === '初級' ? -1 : b === '初級' ? 1 : a.localeCompare(b));
+  const seg = $('level-seg'); seg.innerHTML = '';
+  [...levels, 'all'].forEach(l => {
+    const n = l === 'all' ? allQuestions.length : allQuestions.filter(q => q.level === l).length;
+    seg.append(el('button', { 'data-v': l, text: `${l === 'all' ? '不限' : l}（${n}）` }));
+  });
+  if (![...levels, 'all'].includes(prefs.level)) prefs.level = levels[0];
+  bindSeg('level-seg', 'level', () => { selected.chapter = selected.session = null; renderChips(); });
+  bindSeg('filter-seg', 'filter', renderChips);
+  bindSeg('count-seg', 'count', updatePool);
+
+  $('timer-select').value = prefs.timer;
+  $('timer-select').onchange = e => { prefs.timer = e.target.value; savePrefs(); };
+  $('opt-shuffle-q').checked = prefs.shuffleQ;
+  $('opt-shuffle-o').checked = prefs.shuffleO;
+  $('opt-shuffle-q').onchange = e => { prefs.shuffleQ = e.target.checked; savePrefs(); };
+  $('opt-shuffle-o').onchange = e => { prefs.shuffleO = e.target.checked; savePrefs(); };
+
+  document.querySelectorAll('#modes .mode').forEach(m => {
+    m.onclick = () => { prefs.mode = m.dataset.mode; savePrefs(); refreshMode(); };
+  });
+  refreshHome();
+}
+
+function refreshHome() {
+  const done = Object.keys(stats).filter(id => allQuestions.some(q => q.id === id));
+  let c = 0, w = 0;
+  done.forEach(id => { c += stats[id].c || 0; w += stats[id].w || 0; });
+  $('st-total').textContent = allQuestions.length;
+  $('st-done').textContent = done.length;
+  $('st-acc').textContent = c + w ? Math.round(c / (c + w) * 100) + '%' : '—';
+  $('st-mistake').textContent = validIds(mistakeIds).length;
+  $('mc-mistakes').textContent = validIds(mistakeIds).length;
+  $('mc-bookmarks').textContent = validIds(bookmarkIds).length;
+  refreshMode();
+}
+const validIds = set => allQuestions.filter(q => set.has(q.id)).map(q => q.id);
+
+function refreshMode() {
+  document.querySelectorAll('#modes .mode').forEach(m => m.classList.toggle('active', m.dataset.mode === prefs.mode));
+  const special = prefs.mode === 'mistakes' || prefs.mode === 'bookmarks';
+  $('scope-card').classList.toggle('hidden', special);
+  $('timer-row').classList.toggle('hidden', prefs.mode !== 'exam');
+  if (!special) renderChips(); else updatePool();
+}
+
+function levelPool() {
+  return prefs.level === 'all' ? allQuestions : allQuestions.filter(q => q.level === prefs.level);
+}
+
+function renderChips() {
+  const box = $('chip-groups'); box.innerHTML = '';
+  const pool = levelPool();
+  const key = prefs.filter;                      // 'chapter' | 'session'
+  const field = key === 'chapter' ? 'chapter' : 'exam_session';
+  const values = [...new Set(pool.map(q => q[field]))];
+  if (!selected[key]) selected[key] = new Set(values);
+
+  // 依科目分組（章節模式），屆次模式則依級別分組
+  const groupBy = key === 'chapter' ? 'subject' : 'level';
+  const groups = {};
+  pool.forEach(q => { (groups[q[groupBy]] ||= new Set()).add(q[field]); });
+
+  Object.keys(groups).sort(chapterSort).forEach(g => {
+    const items = [...groups[g]].sort(chapterSort);
+    const chips = el('div', { class: 'chips' });
+    items.forEach(v => {
+      const n = pool.filter(q => q[field] === v && q[groupBy] === g).length;
+      const chip = el('button', { class: 'chip' + (selected[key].has(v) ? ' on' : ''), 'aria-pressed': selected[key].has(v) },
+        v, el('span', { class: 'n', text: n }));
+      chip.onclick = () => {
+        selected[key].has(v) ? selected[key].delete(v) : selected[key].add(v);
+        chip.classList.toggle('on'); chip.setAttribute('aria-pressed', selected[key].has(v)); updatePool();
+      };
+      chips.append(chip);
+    });
+    const toggleAll = el('button', { class: 'link-btn', text: '全選／取消' });
+    toggleAll.onclick = () => {
+      const all = items.every(v => selected[key].has(v));
+      items.forEach(v => all ? selected[key].delete(v) : selected[key].add(v));
+      renderChips();
+    };
+    box.append(el('div', { class: 'group' }, el('div', { class: 'group-head' }, el('b', { text: g }), toggleAll), chips));
+  });
+  updatePool();
+}
+
+function currentPool() {
+  if (prefs.mode === 'mistakes') return allQuestions.filter(q => mistakeIds.has(q.id));
+  if (prefs.mode === 'bookmarks') return allQuestions.filter(q => bookmarkIds.has(q.id));
+  const key = prefs.filter, field = key === 'chapter' ? 'chapter' : 'exam_session';
+  const sel = selected[key];
+  return levelPool().filter(q => !sel || sel.has(q[field]));
+}
+
+function updatePool() {
+  const n = currentPool().length;
+  const want = prefs.count === 'all' ? n : Math.min(n, +prefs.count);
+  $('pool-count').textContent = n;
+  $('start-btn').disabled = n === 0;
+  $('start-btn').textContent = n === 0 ? (prefs.mode === 'mistakes' ? '目前沒有錯題 🎉' : prefs.mode === 'bookmarks' ? '尚未收藏題目' : '請至少選擇一個範圍') : `開始作答 ${want} 題 →`;
+}
+
+/* ================= 測驗流程 ================= */
+function startQuiz(questions) {
+  let qs = questions || currentPool();
+  if (!qs.length) return;
+  if (!questions) {
+    if (prefs.shuffleQ) qs = shuffle(qs);
+    if (prefs.count !== 'all') qs = qs.slice(0, +prefs.count);
+  }
+  const mode = prefs.mode === 'exam' ? 'exam' : 'practice';
+  quiz = {
+    mode, questions: qs, answers: {}, index: 0, startAt: Date.now(), submitted: false,
+    order: Object.fromEntries(qs.map(q => [q.id, prefs.shuffleO ? shuffle(Object.keys(q.options)) : Object.keys(q.options)])),
+    deadline: mode === 'exam' && +prefs.timer ? Date.now() + +prefs.timer * 60000 : null
+  };
+  clearInterval(quiz.timerId);
+  $('timer').classList.toggle('hidden', !quiz.deadline);
+  if (quiz.deadline) { tick(); quiz.timerId = setInterval(tick, 1000); }
+  $('nav-panel').open = qs.length <= 20;
+  show('quiz-view');
+  renderQuestion();
+}
+
+function tick() {
+  const left = (quiz.deadline - Date.now()) / 1000;
+  $('timer').textContent = '⏱ ' + fmtTime(left);
+  $('timer').classList.toggle('low', left < 300);
+  if (left <= 0) { clearInterval(quiz.timerId); toast('時間到，系統已自動交卷'); submitQuiz(true); }
+}
+
+function renderQuestion() {
+  const q = quiz.questions[quiz.index];
+  const total = quiz.questions.length;
+  const ans = quiz.answers[q.id];
+  const revealed = quiz.mode === 'practice' && ans != null;
+
+  $('q-cur').textContent = quiz.index + 1;
+  $('q-total').textContent = total;
+  $('progress').style.width = (Object.keys(quiz.answers).length / total * 100) + '%';
+  $('mark-btn').textContent = bookmarkIds.has(q.id) ? '★' : '☆';
+  $('mark-btn').style.color = bookmarkIds.has(q.id) ? 'var(--warn)' : '';
+
+  const tags = $('q-tags'); tags.innerHTML = '';
+  tags.append(el('span', { class: 'tag level', text: q.level }), el('span', { class: 'tag session', text: q.exam_session }),
+              el('span', { class: 'tag', text: q.subject }), el('span', { class: 'tag', text: q.chapter }));
+  $('q-text').textContent = q.question;
+
+  // 選項依本題順序顯示，代號重新以 A–D 標示；內部仍記錄原始代號
+  const box = $('q-options'); box.innerHTML = '';
+  quiz.order[q.id].forEach((orig, i) => {
+    const label = 'ABCD'[i];
+    let cls = 'opt';
+    if (revealed) { if (orig === q.answer) cls += ' correct'; else if (orig === ans) cls += ' wrong'; }
+    else if (orig === ans) cls += ' selected';
+    const b = el('button', { class: cls }, el('span', { class: 'key', text: label }), el('span', { text: q.options[orig] }));
+    if (revealed) b.disabled = true;
+    b.onclick = () => choose(orig);
+    box.append(b);
+  });
+
+  const ex = $('q-explain'); ex.innerHTML = '';
+  if (revealed) ex.append(explainBox(q, ans));
+
+  $('btn-prev').disabled = quiz.index === 0;
+  const last = quiz.index === total - 1;
+  $('btn-next').classList.toggle('hidden', last);
+  $('btn-submit').classList.toggle('hidden', !last);
+  renderNavGrid();
+}
+
+const displayKey = (q, orig) => 'ABCD'[quiz.order[q.id].indexOf(orig)];
+
+function explainBox(q, ans) {
+  const ok = ans === q.answer;
+  return el('div', { class: 'explain' },
+    el('div', { class: 'verdict ' + (ok ? 'ok' : 'ng'), text: ok ? '✔ 答對了！' : `✘ 答錯了，正確答案是 (${displayKey(q, q.answer)})` }),
+    el('div', { text: q.explanation || '（此題尚無解析）' }),
+    q.source ? el('div', { class: 'src', text: '出處：' + q.source }) : null);
+}
+
+function choose(orig) {
+  const q = quiz.questions[quiz.index];
+  if (quiz.mode === 'practice' && quiz.answers[q.id] != null) return;
+  quiz.answers[q.id] = orig;
+  if (quiz.mode === 'practice') record(q, orig === q.answer);
+  renderQuestion();
+}
+
+function record(q, ok) {
+  const s = stats[q.id] ||= { c: 0, w: 0 };
+  ok ? s.c++ : s.w++;
+  ok ? mistakeIds.delete(q.id) : mistakeIds.add(q.id);
+  saveAll();
+}
+
+function go(d) {
+  const i = quiz.index + d;
+  if (i < 0 || i >= quiz.questions.length) return;
+  quiz.index = i; renderQuestion();
+}
+
+function renderNavGrid() {
+  const g = $('nav-grid'); g.innerHTML = '';
+  quiz.questions.forEach((q, i) => {
+    const a = quiz.answers[q.id];
+    let cls = '';
+    if (a != null) cls = quiz.mode === 'practice' ? (a === q.answer ? 'ok' : 'ng') : 'answered';
+    if (i === quiz.index) cls += ' current';
+    if (bookmarkIds.has(q.id)) cls += ' marked';
+    const b = el('button', { class: cls, text: i + 1, 'aria-label': `第 ${i + 1} 題` });
+    b.onclick = () => { quiz.index = i; renderQuestion(); };
+    g.append(b);
+  });
+}
+
+function toggleBookmark(q = quiz.questions[quiz.index]) {
+  if (bookmarkIds.has(q.id)) { bookmarkIds.delete(q.id); toast('已取消收藏'); }
+  else { bookmarkIds.add(q.id); toast('已加入收藏 ⭐'); }
+  saveAll();
+  if (!$('quiz-view').classList.contains('hidden')) renderQuestion();
+}
+
+function quitQuiz() {
+  const answered = Object.keys(quiz.answers).length;
+  if (quiz.mode === 'exam' && answered && !confirm('確定要離開？本次模擬考作答將不會計分。')) return;
+  clearInterval(quiz.timerId);
+  quiz = null; goHome();
+}
+
+function submitQuiz(auto = false) {
+  const total = quiz.questions.length;
+  const unanswered = total - Object.keys(quiz.answers).length;
+  if (!auto && unanswered > 0 && !confirm(`還有 ${unanswered} 題未作答，確定要交卷嗎？`)) return;
+  clearInterval(quiz.timerId);
+  quiz.submitted = true;
+  quiz.elapsed = (Date.now() - quiz.startAt) / 1000;
+  if (quiz.mode === 'exam') {
+    quiz.questions.forEach(q => { const a = quiz.answers[q.id]; if (a != null) record(q, a === q.answer); });
+  }
+  renderResult();
+}
+
+/* ================= 成績 ================= */
+let reviewFilter = 'wrong';
+
+function renderResult() {
+  const qs = quiz.questions, total = qs.length;
+  const ok = qs.filter(q => quiz.answers[q.id] === q.answer).length;
+  const skip = qs.filter(q => quiz.answers[q.id] == null).length;
+  const score = Math.round(ok / total * 100);
+
+  $('r-score').textContent = score;
+  $('r-ok').textContent = ok;
+  $('r-ng').textContent = total - ok - skip;
+  $('r-skip').textContent = skip;
+  $('r-time').textContent = fmtTime(quiz.elapsed);
+  $('r-msg').textContent = score >= 90 ? '太強了，穩穩過關！🏆' : score >= 70 ? '表現不錯，繼續保持！🎉' : score >= 60 ? '達到及格門檻，再加把勁！💪' : '別灰心，把錯題弄懂就是進步 📚';
+  $('r-sub').textContent = `${quiz.mode === 'exam' ? '模擬考' : '練習'}・共 ${total} 題・答錯的題目已自動加入錯題本`;
+  const ring = $('ring-fg');
+  ring.style.stroke = score >= 70 ? 'var(--success)' : score >= 60 ? 'var(--warn)' : 'var(--danger)';
+  ring.style.strokeDashoffset = 377;
+  requestAnimationFrame(() => requestAnimationFrame(() => { ring.style.strokeDashoffset = 377 * (1 - score / 100); }));
+  $('btn-retry').disabled = ok === total;
+
+  // 各章節表現
+  const by = {};
+  qs.forEach(q => { const k = `${q.subject.split('：')[0]}｜${q.chapter}`; (by[k] ||= { ok: 0, n: 0 }); by[k].n++; if (quiz.answers[q.id] === q.answer) by[k].ok++; });
+  const bars = $('r-bars'); bars.innerHTML = '';
+  Object.keys(by).sort(chapterSort).forEach(k => {
+    const { ok, n } = by[k], p = Math.round(ok / n * 100);
+    const color = p >= 70 ? 'var(--success)' : p >= 60 ? 'var(--warn)' : 'var(--danger)';
+    const fill = el('div'); fill.style.width = p + '%'; fill.style.background = color;
+    bars.append(el('div', { class: 'bar-row' }, el('span', { text: k }), el('div', { class: 'bar' }, fill), el('b', { text: `${ok}/${n}` })));
+  });
+
+  bindReviewSeg();
+  renderReview();
+  show('result-view');
+}
+
+function bindReviewSeg() {
+  const seg = $('review-seg');
+  seg.querySelectorAll('button').forEach(b => {
+    b.classList.toggle('active', b.dataset.v === reviewFilter);
+    b.onclick = () => { reviewFilter = b.dataset.v; bindReviewSeg(); renderReview(); };
+  });
+}
+
+function renderReview() {
+  const box = $('r-review'); box.innerHTML = '';
+  const list = quiz.questions.map((q, i) => ({ q, i })).filter(({ q }) => reviewFilter === 'all' || quiz.answers[q.id] !== q.answer);
+  if (!list.length) { box.append(el('div', { class: 'empty', text: '全部答對，沒有錯題！🎉' })); return; }
+  list.forEach(({ q, i }) => {
+    const a = quiz.answers[q.id], ok = a === q.answer;
+    const opts = el('ul', { class: 'opts' });
+    quiz.order[q.id].forEach((orig, j) => {
+      const cls = orig === q.answer ? 'right' : orig === a ? 'mine' : '';
+      opts.append(el('li', { class: cls, text: `(${'ABCD'[j]}) ${q.options[orig]}${orig === q.answer ? '  ✔' : orig === a ? '  ✘' : ''}` }));
+    });
+    const star = el('button', { class: 'link-btn', text: bookmarkIds.has(q.id) ? '★ 已收藏' : '☆ 收藏' });
+    star.onclick = () => { toggleBookmark(q); star.textContent = bookmarkIds.has(q.id) ? '★ 已收藏' : '☆ 收藏'; };
+    box.append(el('div', { class: 'review-item' + (ok ? ' ok' : '') },
+      el('div', { class: 'group-head', style: 'margin:0' },
+        el('div', { class: 'tags', style: 'margin:0' }, el('span', { class: 'tag', text: `第 ${i + 1} 題` }), el('span', { class: 'tag session', text: q.exam_session }), el('span', { class: 'tag', text: q.chapter })),
+        star),
+      el('p', { class: 'q', text: q.question }),
+      opts,
+      el('div', { class: 'ans' },
+        ok ? el('span', { class: 'ok', text: '✔ 答對' }) : el('span', { class: 'ng', text: a == null ? '⬜ 未作答' : `✘ 你的答案 (${displayKey(q, a)})` }),
+        `　正確答案 (${displayKey(q, q.answer)})`),
+      el('div', { class: 'explain', style: 'margin-top:10px' }, el('div', { text: q.explanation || '（此題尚無解析）' }),
+        q.source ? el('div', { class: 'src', text: '出處：' + q.source }) : null)));
+  });
+}
+
+function retryWrong() {
+  const wrong = quiz.questions.filter(q => quiz.answers[q.id] !== q.answer);
+  if (!wrong.length) return;
+  startQuiz(prefs.shuffleQ ? shuffle(wrong) : wrong);
+}
+function restartSame() { startQuiz(prefs.shuffleQ ? shuffle(quiz.questions) : quiz.questions.slice()); }
+function goHome() {
+  if (quiz && !quiz.submitted && !$('quiz-view').classList.contains('hidden')) return quitQuiz();
+  if (!allQuestions.length) return;
+  refreshHome(); show('home-view');
+}
+
+/* ================= 匯出／匯入 ================= */
+function exportData() {
+  const data = { app: 'ipas-ai-practice', version: 2, exportedAt: new Date().toISOString(), mistakes: [...mistakeIds], bookmarks: [...bookmarkIds], stats };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+  const a = el('a', { href: url, download: `ipas-ai-紀錄-${new Date().toISOString().slice(0, 10)}.json` });
+  document.body.append(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  toast('紀錄已匯出');
+}
+function importData(e) {
+  const file = e.target.files[0]; if (!file) return;
+  file.text().then(t => {
+    const d = JSON.parse(t);
+    if (!Array.isArray(d.mistakes)) throw new Error();
+    d.mistakes.forEach(id => mistakeIds.add(id));
+    (d.bookmarks || []).forEach(id => bookmarkIds.add(id));
+    for (const [id, s] of Object.entries(d.stats || {})) {
+      const cur = stats[id] ||= { c: 0, w: 0 };
+      cur.c = Math.max(cur.c, s.c || 0); cur.w = Math.max(cur.w, s.w || 0);
     }
+    saveAll(); refreshHome(); toast('匯入成功，已與現有紀錄合併');
+  }).catch(() => toast('檔案格式不正確，匯入失敗'));
+  e.target.value = '';
+}
+function resetData() {
+  if (!confirm('確定要清除所有錯題、收藏與作答統計嗎？此動作無法復原。')) return;
+  mistakeIds.clear(); bookmarkIds.clear(); stats = {};
+  saveAll(); refreshHome(); toast('已清除全部紀錄');
+}
 
-    function renderCheckboxes(containerId, name, items) {
-        const cl = document.getElementById(containerId);
-        cl.innerHTML = '';
-        if (items.length === 0) {
-            cl.innerHTML = '<div style="padding:10px; color:#999;">此分類下目前無題目</div>';
-            return;
-        }
-        items.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'checkbox-item';
-            div.innerHTML = `<label style="font-weight:normal"><input type="checkbox" name="${name}" value="${item}" checked> ${item}</label>`;
-            cl.appendChild(div);
-        });
-    }
-
-    function selectAll(name) {
-        const cbs = document.querySelectorAll(`input[name="${name}"]`);
-        const allChecked = Array.from(cbs).every(cb => cb.checked);
-        cbs.forEach(cb => cb.checked = !allChecked);
-    }
-
-    // 切換一般測驗 / 錯題複習
-    function toggleMode() {
-        const mode = document.querySelector('input[name="mode"]:checked').value;
-        document.getElementById('normal-settings').style.display = mode === 'mistakes' ? 'none' : 'block';
-    }
-
-    // 切換依章節 / 依屆次
-    function toggleFilterMode() {
-        const mode = document.querySelector('input[name="filterMode"]:checked').value;
-        document.getElementById('chapter-selection-group').classList.toggle('hidden', mode !== 'chapter');
-        document.getElementById('session-selection-group').classList.toggle('hidden', mode !== 'session');
-    }
-
-    // 開始測驗
-    function startQuiz() {
-        const testMode = document.querySelector('input[name="mode"]:checked').value;
-        const countVal = document.getElementById('question-count').value;
-        let pool = [];
-        
-        if (testMode === 'mistakes') {
-            if (mistakeIds.length === 0) return alert('目前沒有錯題紀錄！');
-            pool = allQuestions.filter(q => mistakeIds.includes(q.id));
-        } else {
-            // 先過濾級別
-            const level = document.getElementById('level-select').value;
-            let levelFiltered = level === 'all' ? allQuestions : allQuestions.filter(q => q.level === level);
-            
-            // 再依據「範圍模式」過濾
-            const filterMode = document.querySelector('input[name="filterMode"]:checked').value;
-            const checkboxName = filterMode === 'chapter' ? 'chapter' : 'session';
-            const selected = Array.from(document.querySelectorAll(`input[name="${checkboxName}"]:checked`)).map(cb => cb.value);
-            
-            if (selected.length === 0) return alert('請至少選擇一個範圍！');
-            
-            // 決定過濾條件是看 chapter 還是 exam_session
-            const filterKey = filterMode === 'chapter' ? 'chapter' : 'exam_session';
-            pool = levelFiltered.filter(q => selected.includes(q[filterKey]));
-        }
-        
-        if (pool.length === 0) return alert('沒有符合條件的題目！');
-        
-        pool.sort(() => Math.random() - 0.5); // 隨機打亂
-        const count = countVal === 'all' ? pool.length : Math.min(parseInt(countVal), pool.length);
-        currentQuizQuestions = pool.slice(0, count);
-        userAnswers = {}; currentIndex = 0;
-        
-        document.getElementById('settings-view').classList.add('hidden');
-        document.getElementById('result-view').classList.add('hidden');
-        document.getElementById('quiz-view').classList.remove('hidden');
-        renderQuestion();
-    }
-
-    function renderQuestion() {
-        const q = currentQuizQuestions[currentIndex];
-        document.getElementById('current-q-num').innerText = currentIndex + 1;
-        document.getElementById('total-q-num').innerText = currentQuizQuestions.length;
-        
-        document.getElementById('current-level').innerText = q.level || '未知級別';
-        document.getElementById('current-chapter').innerText = q.chapter || '未分類';
-        document.getElementById('current-session').innerText = q.exam_session || '未知屆次';
-        
-        document.getElementById('question-text').innerText = q.question;
-        document.getElementById('progress').style.width = ((currentIndex) / currentQuizQuestions.length * 100) + '%';
-        
-        const optCont = document.getElementById('options-container');
-        optCont.innerHTML = '';
-        for (const [key, val] of Object.entries(q.options)) {
-            const checked = userAnswers[q.id] === key ? 'checked' : '';
-            const lbl = document.createElement('label');
-            lbl.className = 'option-label';
-            lbl.innerHTML = `<input type="radio" name="opt" value="${key}" ${checked} onchange="userAnswers['${q.id}']='${key}'"> (${key}) ${val}`;
-            optCont.appendChild(lbl);
-        }
-        document.getElementById('btn-prev').disabled = currentIndex === 0;
-        document.getElementById('btn-next').classList.toggle('hidden', currentIndex === currentQuizQuestions.length - 1);
-        document.getElementById('btn-submit').classList.toggle('hidden', currentIndex !== currentQuizQuestions.length - 1);
-    }
-
-    function nextQuestion() { if(currentIndex < currentQuizQuestions.length - 1) { currentIndex++; renderQuestion(); } }
-    function prevQuestion() { if(currentIndex > 0) { currentIndex--; renderQuestion(); } }
-
-    function submitQuiz() {
-        if(Object.keys(userAnswers).length < currentQuizQuestions.length && !confirm('您還有題目未作答，確定交卷？')) return;
-        
-        let correctCount = 0;
-        let newMistakes = new Set(mistakeIds);
-        const revCont = document.getElementById('review-container');
-        revCont.innerHTML = '';
-
-        currentQuizQuestions.forEach((q, idx) => {
-            const uAns = userAnswers[q.id];
-            const isCorr = uAns === q.answer;
-            if (isCorr) { correctCount++; newMistakes.delete(q.id); }
-            else { newMistakes.add(q.id); }
-            
-            const div = document.createElement('div');
-            div.className = `result-item ${isCorr ? 'correct' : ''}`;
-            const stHTML = isCorr ? `<span style="color:var(--success-color)">✔ 答對</span>` : `<span style="color:var(--danger-color)">✘ 答錯 (您的答案: ${uAns || '未作答'})</span>`;
-            div.innerHTML = `<p><strong>第 ${idx+1} 題：</strong> [${q.level} - ${q.exam_session}] ${q.question}</p><p>${stHTML} | <strong>正確答案：${q.answer}</strong></p><div class="explanation"><strong>解析：</strong>${q.explanation}</div>`;
-            revCont.appendChild(div);
-        });
-
-        mistakeIds = Array.from(newMistakes);
-        localStorage.setItem('ai_quiz_mistakes', JSON.stringify(mistakeIds));
-        document.getElementById('mistake-count').innerText = mistakeIds.length;
-        document.getElementById('score').innerText = Math.round((correctCount / currentQuizQuestions.length) * 100);
-        document.getElementById('correct-count').innerText = correctCount;
-        document.getElementById('total-result-count').innerText = currentQuizQuestions.length;
-        document.getElementById('quiz-view').classList.add('hidden');
-        document.getElementById('result-view').classList.remove('hidden');
-    }
-
-    function returnToMenu() {
-        document.getElementById('result-view').classList.add('hidden');
-        document.getElementById('settings-view').classList.remove('hidden');
-        document.querySelector('input[value="normal"]').checked = true;
-        toggleMode();
-    }
-    function reviewMistakesMode() {
-        document.querySelector('input[value="mistakes"]').checked = true;
-        toggleMode();
-        startQuiz();
-    }
+/* ================= 鍵盤快捷鍵 ================= */
+document.addEventListener('keydown', e => {
+  if ($('quiz-view').classList.contains('hidden') || !quiz || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toUpperCase();
+  const idx = 'ABCD'.indexOf(k) >= 0 ? 'ABCD'.indexOf(k) : '1234'.indexOf(k);
+  const q = quiz.questions[quiz.index];
+  if (idx >= 0 && idx < quiz.order[q.id].length) { choose(quiz.order[q.id][idx]); }
+  else if (e.key === 'ArrowRight' || e.key === 'Enter') { if (quiz.index < quiz.questions.length - 1) go(1); else if (e.key === 'Enter') submitQuiz(); }
+  else if (e.key === 'ArrowLeft') go(-1);
+  else if (k === 'S') toggleBookmark();
+  else return;
+  e.preventDefault();
+});
 </script>
 </body>
 </html>
