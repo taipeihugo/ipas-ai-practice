@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI應用規劃師 - 模擬測驗系統</title>
+    <title>AI應用規劃師 - 模擬測驗系統 v2</title>
     <style>
         :root {
             --primary-color: #4a90e2;
@@ -51,12 +51,12 @@
         button:hover { background-color: #357abd; }
         button.secondary { background-color: #95a5a6; }
         button.secondary:hover { background-color: #7f8c8d; }
-        .chapter-list {
+        .checkbox-list {
             max-height: 200px; overflow-y: auto; border: 1px solid #ddd;
             padding: 10px; border-radius: 4px; background: #fafafa;
         }
-        .chapter-item { margin-bottom: 5px; display: flex; align-items: center; }
-        .chapter-item input { margin-right: 10px; width: auto; }
+        .checkbox-item { margin-bottom: 5px; display: flex; align-items: center; }
+        .checkbox-item input { margin-right: 10px; width: auto; }
         .question-title { font-size: 1.2em; margin-bottom: 15px; }
         .option-label {
             display: block; padding: 12px; margin-bottom: 10px; background: var(--secondary-color);
@@ -78,6 +78,7 @@
         .result-item.correct { border-left-color: var(--success-color); }
         .explanation { background: #e8f4f8; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 0.9em; color: #31708f; }
         .badge { display: inline-block; padding: 3px 8px; font-size: 0.8em; background: #34495e; color: #fff; border-radius: 12px; margin-bottom: 10px; }
+        .badge.level-badge { background: #e67e22; }
         @media (min-width: 768px) {
             .nav-buttons { flex-direction: row; justify-content: space-between; }
             .nav-buttons button { max-width: 200px; }
@@ -87,12 +88,13 @@
 <body>
 <div class="container">
     <header>
-        <h1>AI應用規劃師(初級) 模擬測驗</h1>
-        <p>自訂題數、選擇章節、錯題重複練習</p>
+        <h1>AI應用規劃師 模擬測驗</h1>
+        <p>支援初級/中級切換、依屆次或章節測驗</p>
     </header>
 
     <div id="settings-view" class="card">
         <h2>測驗設定</h2>
+        
         <div class="form-group">
             <label>測驗模式</label>
             <div>
@@ -104,19 +106,49 @@
                 </label>
             </div>
         </div>
-        <div class="form-group" id="chapter-selection-group">
-            <label>選擇測試章節</label>
-            <div class="chapter-list" id="chapter-list"></div>
-            <button class="secondary" style="margin-top: 5px; padding: 5px;" onclick="selectAllChapters()">全選 / 取消全選</button>
+
+        <div id="normal-settings">
+            <div class="form-group">
+                <label>測驗級別</label>
+                <select id="level-select" onchange="updateFilters()">
+                    <option value="初級" selected>初級 (Beginner)</option>
+                    <option value="中級">中級 (Intermediate)</option>
+                    <option value="all">不限 (混合測驗)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>測驗範圍分類</label>
+                <div>
+                    <label style="font-weight: normal; margin-right: 15px;">
+                        <input type="radio" name="filterMode" value="chapter" checked onchange="toggleFilterMode()"> 依科目章節挑選
+                    </label>
+                    <label style="font-weight: normal;">
+                        <input type="radio" name="filterMode" value="session" onchange="toggleFilterMode()"> 依考試屆次挑選
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group" id="chapter-selection-group">
+                <label>選擇章節 (將所選級別的考古題打散至章節)</label>
+                <div class="checkbox-list" id="chapter-list"></div>
+                <button class="secondary" style="margin-top: 5px; padding: 5px;" onclick="selectAll('chapter')">全選 / 取消全選</button>
+            </div>
+
+            <div class="form-group hidden" id="session-selection-group">
+                <label>選擇考試屆次 (完整模擬歷屆試題)</label>
+                <div class="checkbox-list" id="session-list"></div>
+                <button class="secondary" style="margin-top: 5px; padding: 5px;" onclick="selectAll('session')">全選 / 取消全選</button>
+            </div>
         </div>
+
         <div class="form-group">
             <label>測驗題數</label>
             <select id="question-count">
                 <option value="5">5 題</option>
                 <option value="10">10 題</option>
-                <option value="15">15 題</option>
-                <option value="20" selected>20 題</option>
-                <option value="all">全部</option>
+                <option value="20">20 題</option>
+                <option value="all" selected>全部符合條件的題目</option>
             </select>
         </div>
         <button onclick="startQuiz()">開始測驗</button>
@@ -125,7 +157,11 @@
     <div id="quiz-view" class="card hidden">
         <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-            <span class="badge" id="current-chapter">章節</span>
+            <div>
+                <span class="badge level-badge" id="current-level">級別</span>
+                <span class="badge" id="current-chapter">章節</span>
+                <span class="badge" id="current-session" style="background: #16a085;">屆次</span>
+            </div>
             <span style="font-weight: bold; color: var(--primary-color);">題目 <span id="current-q-num">1</span> / <span id="total-q-num">10</span></span>
         </div>
         <div class="question-title" id="question-text">題目內容</div>
@@ -155,45 +191,93 @@
     let allQuestions = [], currentQuizQuestions = [], userAnswers = {}, currentIndex = 0;
     let mistakeIds = JSON.parse(localStorage.getItem('ai_quiz_mistakes') || '[]');
 
+    // 初始化讀取資料
     fetch('questions.json').then(res => res.json()).then(data => {
         allQuestions = data;
         document.getElementById('mistake-count').innerText = mistakeIds.length;
-        const chapters = [...new Set(allQuestions.map(q => q.chapter))];
-        const cl = document.getElementById('chapter-list');
-        chapters.forEach(chap => {
-            const div = document.createElement('div');
-            div.className = 'chapter-item';
-            div.innerHTML = `<label style="font-weight:normal"><input type="checkbox" name="chapter" value="${chap}" checked> ${chap}</label>`;
-            cl.appendChild(div);
-        });
+        updateFilters(); // 初始化過濾選單
     }).catch(e => alert('無法載入題庫 questions.json'));
 
-    function selectAllChapters() {
-        const cbs = document.querySelectorAll('input[name="chapter"]');
+    // 根據選擇的「級別」更新「章節」與「屆次」的選項
+    function updateFilters() {
+        const level = document.getElementById('level-select').value;
+        let filteredQ = allQuestions;
+        if (level !== 'all') {
+            filteredQ = allQuestions.filter(q => q.level === level);
+        }
+        
+        // 更新章節選單
+        const chapters = [...new Set(filteredQ.map(q => q.chapter))].sort();
+        renderCheckboxes('chapter-list', 'chapter', chapters);
+        
+        // 更新屆次選單
+        const sessions = [...new Set(filteredQ.map(q => q.exam_session))].sort();
+        renderCheckboxes('session-list', 'session', sessions);
+    }
+
+    function renderCheckboxes(containerId, name, items) {
+        const cl = document.getElementById(containerId);
+        cl.innerHTML = '';
+        if (items.length === 0) {
+            cl.innerHTML = '<div style="padding:10px; color:#999;">此分類下目前無題目</div>';
+            return;
+        }
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'checkbox-item';
+            div.innerHTML = `<label style="font-weight:normal"><input type="checkbox" name="${name}" value="${item}" checked> ${item}</label>`;
+            cl.appendChild(div);
+        });
+    }
+
+    function selectAll(name) {
+        const cbs = document.querySelectorAll(`input[name="${name}"]`);
         const allChecked = Array.from(cbs).every(cb => cb.checked);
         cbs.forEach(cb => cb.checked = !allChecked);
     }
 
+    // 切換一般測驗 / 錯題複習
     function toggleMode() {
         const mode = document.querySelector('input[name="mode"]:checked').value;
-        document.getElementById('chapter-selection-group').style.display = mode === 'mistakes' ? 'none' : 'block';
+        document.getElementById('normal-settings').style.display = mode === 'mistakes' ? 'none' : 'block';
     }
 
+    // 切換依章節 / 依屆次
+    function toggleFilterMode() {
+        const mode = document.querySelector('input[name="filterMode"]:checked').value;
+        document.getElementById('chapter-selection-group').classList.toggle('hidden', mode !== 'chapter');
+        document.getElementById('session-selection-group').classList.toggle('hidden', mode !== 'session');
+    }
+
+    // 開始測驗
     function startQuiz() {
-        const mode = document.querySelector('input[name="mode"]:checked').value;
+        const testMode = document.querySelector('input[name="mode"]:checked').value;
         const countVal = document.getElementById('question-count').value;
         let pool = [];
-        if (mode === 'mistakes') {
+        
+        if (testMode === 'mistakes') {
             if (mistakeIds.length === 0) return alert('目前沒有錯題紀錄！');
             pool = allQuestions.filter(q => mistakeIds.includes(q.id));
         } else {
-            const sc = Array.from(document.querySelectorAll('input[name="chapter"]:checked')).map(cb => cb.value);
-            if (sc.length === 0) return alert('請至少選擇一個章節！');
-            pool = allQuestions.filter(q => sc.includes(q.chapter));
+            // 先過濾級別
+            const level = document.getElementById('level-select').value;
+            let levelFiltered = level === 'all' ? allQuestions : allQuestions.filter(q => q.level === level);
+            
+            // 再依據「範圍模式」過濾
+            const filterMode = document.querySelector('input[name="filterMode"]:checked').value;
+            const checkboxName = filterMode === 'chapter' ? 'chapter' : 'session';
+            const selected = Array.from(document.querySelectorAll(`input[name="${checkboxName}"]:checked`)).map(cb => cb.value);
+            
+            if (selected.length === 0) return alert('請至少選擇一個範圍！');
+            
+            // 決定過濾條件是看 chapter 還是 exam_session
+            const filterKey = filterMode === 'chapter' ? 'chapter' : 'exam_session';
+            pool = levelFiltered.filter(q => selected.includes(q[filterKey]));
         }
+        
         if (pool.length === 0) return alert('沒有符合條件的題目！');
         
-        pool.sort(() => Math.random() - 0.5);
+        pool.sort(() => Math.random() - 0.5); // 隨機打亂
         const count = countVal === 'all' ? pool.length : Math.min(parseInt(countVal), pool.length);
         currentQuizQuestions = pool.slice(0, count);
         userAnswers = {}; currentIndex = 0;
@@ -208,7 +292,11 @@
         const q = currentQuizQuestions[currentIndex];
         document.getElementById('current-q-num').innerText = currentIndex + 1;
         document.getElementById('total-q-num').innerText = currentQuizQuestions.length;
-        document.getElementById('current-chapter').innerText = q.chapter;
+        
+        document.getElementById('current-level').innerText = q.level || '未知級別';
+        document.getElementById('current-chapter').innerText = q.chapter || '未分類';
+        document.getElementById('current-session').innerText = q.exam_session || '未知屆次';
+        
         document.getElementById('question-text').innerText = q.question;
         document.getElementById('progress').style.width = ((currentIndex) / currentQuizQuestions.length * 100) + '%';
         
@@ -246,7 +334,7 @@
             const div = document.createElement('div');
             div.className = `result-item ${isCorr ? 'correct' : ''}`;
             const stHTML = isCorr ? `<span style="color:var(--success-color)">✔ 答對</span>` : `<span style="color:var(--danger-color)">✘ 答錯 (您的答案: ${uAns || '未作答'})</span>`;
-            div.innerHTML = `<p><strong>第 ${idx+1} 題：</strong>${q.question}</p><p>${stHTML} | <strong>正確答案：${q.answer}</strong></p><div class="explanation"><strong>解析：</strong>${q.explanation}</div>`;
+            div.innerHTML = `<p><strong>第 ${idx+1} 題：</strong> [${q.level} - ${q.exam_session}] ${q.question}</p><p>${stHTML} | <strong>正確答案：${q.answer}</strong></p><div class="explanation"><strong>解析：</strong>${q.explanation}</div>`;
             revCont.appendChild(div);
         });
 
